@@ -9,7 +9,7 @@ description = "Lightweight toolkit and CLI for cleaning, normalizing, and auditi
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "Mohamed Kamal Salih Mahmod", email = "102423366+MOHAMEDKAMALSALLIH@users.noreply.github.com" }]
 keywords = ["arabic", "nlp", "text-cleaning", "tashkeel"]
 classifiers = [
     "Development Status :: 3 - Alpha",
