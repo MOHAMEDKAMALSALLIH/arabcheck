@@ -145,7 +145,7 @@ for issue in issues:
 
 ---
 
-Examples
+## Examples
 
 Full working examples are in the examples/ folder:
 
@@ -156,49 +156,48 @@ Run them:
 
 ---
 
-Testing
+## Testing
 
-22 tests covering core and CLI — all passing ✅
+    pip install -e ".[dev]"
+    pytest
 
----
-
-Roadmap
-
-☑ Tashkeel & Tatweel removal
-☑ Character normalization
-☑ File + stdin support
-☑ JSON output
-☑ Exit codes for CI/CD
-☑ Grammar audit (hamzat qat/wasl)
-☐ Extended audit rules
-☐ Dataset loading (CSV, JSONL)
-☐ Duplicate detection
-☐ Text quality statistics
+**22 tests** covering core and CLI — all passing ✅
 
 ---
 
-Contributing
+## Roadmap
 
-Contributions, issues, and feature requests are welcome! See CONTRIBUTING.md for guidelines.
+- [x] Tashkeel & Tatweel removal
+- [x] Character normalization
+- [x] File + stdin support
+- [x] JSON output
+- [x] Exit codes for CI/CD
+- [x] Grammar audit (hamzat qat/wasl)
+- [ ] Extended audit rules
+- [ ] Dataset loading (CSV, JSONL)
+- [ ] Duplicate detection
+- [ ] Text quality statistics
 
 ---
 
-Releases
+## Contributing
 
-See Releases for version history.
+Contributions, issues, and feature requests are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-License
+## Releases
 
-MIT — see LICENSE for details.
+See [Releases](https://github.com/MOHAMEDKAMALSALLIH/arabcheck/releases) for version history.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
 <p align="center">
   Made with ❤️ for the Arabic NLP community
 </p>
-```
-
----
-
