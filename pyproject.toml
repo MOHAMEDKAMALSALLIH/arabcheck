@@ -21,6 +21,12 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
+[project.urls]
+Homepage = "https://github.com/MOHAMEDKAMALSALLIH/arabcheck"
+Repository = "https://github.com/MOHAMEDKAMALSALLIH/arabcheck"
+Issues = "https://github.com/MOHAMEDKAMALSALLIH/arabcheck/issues"
+Changelog = "https://github.com/MOHAMEDKAMALSALLIH/arabcheck/blob/main/CHANGELOG.md"
+Releases = "https://github.com/MOHAMEDKAMALSALLIH/arabcheck/releases"
 
 [project.scripts]
 arabcheck = "arabcheck.cli:main"
