@@ -18,10 +18,10 @@ Arabic text data often contains noise that breaks NLP pipelines:
 
 - **Unicode variants** — `أ` / `إ` / `آ` / `ا` / `ٱ` all represent alif
 - **Diacritics (Tashkeel)** — fatha, damma, shadda, tanween
-- **Tatweel (Kashida)** — decorative stretching characters `ـــــ`
+- **Tatweel (Kashida)** — decorative stretching characters
 - **Quranic marks** and extra whitespace
 
-ArabCheck makes cleaning and auditing this data a one-liner — with full transparency and configurable operations.
+ArabCheck makes cleaning and auditing this data a one-liner.
 
 ---
 
@@ -29,22 +29,22 @@ ArabCheck makes cleaning and auditing this data a one-liner — with full transp
 
 - 🕌 **Tashkeel removal** — Harakat + Quranic marks
 - 🔤 **Character normalization** — Alif, Yaa, Hamza, Taa Marbuta
-- 〰️ **Tatweel removal** — Kashida stretching characters
+- 〰️ **Tatweel removal** — Kashida stretching
 - 🧹 **Text cleaning** — Whitespace normalization
-- 🔍 **Grammar audit** — Detect common hamzat qat/wasl errors
+- 🔍 **Grammar audit** — Hamzat qat/wasl detection
 - 📂 **File + stdin support**
-- 🤖 **JSON output** for CI/CD pipelines
-- 🧩 **Extensible** — easy to add new rules
+- 🤖 **JSON output** for CI/CD
+- 🧩 **Extensible**
 
 ---
 
 ## Install
 
-### From PyPI (recommended)
+**From PyPI (recommended):**
 
     pip install arabcheck
 
-### From source
+**From source:**
 
     git clone https://github.com/MOHAMEDKAMALSALLIH/arabcheck.git
     cd arabcheck
@@ -80,79 +80,97 @@ ArabCheck makes cleaning and auditing this data a one-liner — with full transp
     arabcheck "أحمد إبراهيم آمن" --normalize
     # → احمد ابراهيم امن
 
-> ⚠️ **Warning**: Normalization loses linguistic information. Use it for search, indexing, or NLP pipelines only.
+**⚠️ Warning**: Normalization loses linguistic information. Use it for search, indexing, or NLP pipelines only.
 
 ### 3. Audit text
 
     arabcheck "الأمر بالأمر" --audit
-    # ⚠️  احتمال خطأ: 'الأمر' تبدأ بـ 'ال' + همزة قطع.
+    # ⚠️ احتمال خطأ: 'الأمر' تبدأ بـ 'ال' + همزة قطع.
 
-### 4. JSON output (for automation)
+### 4. JSON output
 
     arabcheck "النَّصُّ" --clean --json
 
-```json
-{
-  "input": "النَّصُّ",
-  "result": "النص",
-  "issues": [],
-  "meta": {
-    "cleaned": true,
-    "normalized": false,
-    "audited": false,
-    "version": "0.1.0"
-  }
-}
-```
+Returns:
 
-5. Read from file
+    {
+      "input": "النَّصُّ",
+      "result": "النص",
+      "issues": [],
+      "meta": {
+        "cleaned": true,
+        "normalized": false,
+        "audited": false,
+        "version": "0.1.0"
+      }
+    }
 
-6. From stdin
+### 5. Read from file
 
----
+    arabcheck --file dataset.txt --clean
 
-CLI Reference
+### 6. From stdin
 
-Exit Codes
-
-Code Meaning
-0 Success, no issues
-1 Issues found (with --audit)
-2 Input error
+    cat article.txt | arabcheck --clean
 
 ---
 
-Use as a Library
+## CLI Reference
 
-```python
-from arabcheck import ArabCheck
+    usage: arabcheck [-h] [-f FILE] [-c] [-n] [-a] [-j] [-q] [-V] [text]
 
-checker = ArabCheck()
+| Option | Description |
+|--------|-------------|
+| `-h, --help` | Show help |
+| `-f, --file FILE` | Read from file |
+| `-c, --clean` | Remove tashkeel, tatweel, extra spaces |
+| `-n, --normalize` | Normalize letters |
+| `-a, --audit` | Audit spelling issues |
+| `-j, --json` | JSON output |
+| `-q, --quiet` | Suppress output |
+| `-V, --version` | Show version |
 
-# Clean
-text = checker.clean_text("النَّصُّ العَرَبِيُّ ـــ")
-print(text)  # → النص العربي
+### Exit Codes
 
-# Normalize
-print(checker.normalize("أحمد إبراهيم"))
-# → احمد ابراهيم
+| Code | Meaning |
+|:----:|:--------|
+| `0` | Success, no issues |
+| `1` | Issues found (with `--audit`) |
+| `2` | Input error |
 
-# Audit
-issues = checker.audit("الأمر بالأمر")
-for issue in issues:
-    print(issue["message"])
-```
+---
+
+## Use as a Library
+
+    from arabcheck import ArabCheck
+
+    checker = ArabCheck()
+
+    # Clean
+    text = checker.clean_text("النَّصُّ العَرَبِيُّ ـــ")
+    print(text)  # → النص العربي
+
+    # Normalize
+    print(checker.normalize("أحمد إبراهيم"))
+
+    # Audit
+    issues = checker.audit("الأمر بالأمر")
+    for issue in issues:
+        print(issue["message"])
 
 ---
 
 ## Examples
 
-Full working examples are in the examples/ folder:
+Full working examples are in the [`examples/`](examples/) folder:
 
-· clean_dataset.py — Clean an entire Arabic text dataset for NLP training
-· preprocess_for_ai.py — Full preprocessing pipeline for AI models
+- **[`clean_dataset.py`](examples/clean_dataset.py)** — Clean an entire Arabic text dataset
+- **[`preprocess_for_ai.py`](examples/preprocess_for_ai.py)** — Preprocessing pipeline for AI models
 
 Run them:
+
+    python examples/clean_dataset.py
+    python examples/preprocess_for_ai.py
 
 ---
 
@@ -172,7 +190,7 @@ Run them:
 - [x] File + stdin support
 - [x] JSON output
 - [x] Exit codes for CI/CD
-- [x] Grammar audit (hamzat qat/wasl)
+- [x] Grammar audit
 - [ ] Extended audit rules
 - [ ] Dataset loading (CSV, JSONL)
 - [ ] Duplicate detection
@@ -182,7 +200,7 @@ Run them:
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions, issues, and feature requests are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
