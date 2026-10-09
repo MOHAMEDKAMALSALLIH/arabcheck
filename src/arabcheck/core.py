@@ -28,16 +28,20 @@ class ArabCheck:
         return text
 
     def audit(self, text: str) -> list:
-        issues = []
-        for i, word in enumerate(text.split(), start=1):
-            if self.patterns.HAMZAT_QAT.match(word):
-                issues.append({
-                    "type": "hamzat_qat",
-                    "word": word,
-                    "position": i,
-                    "message": f"احتمال خطأ: '{word}' تبدأ بـ 'ال' + همزة قطع.",
-                })
-        return issues
+        from .rules.hamza import HamzatQatRule
+
+        rule = HamzatQatRule()
+        new_issues = rule.check(text)
+
+        return [
+            {
+                "type": issue["rule"],
+                "word": issue["word"],
+                "position": issue["position"],
+                "message": issue["message"],
+            }
+            for issue in new_issues
+        ]
 
     def process(self, text, *, clean=False, normalize=False, audit=False):
         issues = self.audit(text) if audit else []
