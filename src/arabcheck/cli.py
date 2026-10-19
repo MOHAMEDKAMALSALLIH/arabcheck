@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from . import __version__
 from .core import ArabCheck
+from .scanner import Scanner
 
 
 def read_input(args, parser):
@@ -35,7 +36,58 @@ def build_parser():
     return p
 
 
+def run_scan(argv) -> int:
+    """Run the modular scanner without changing legacy CLI parsing."""
+    parser = argparse.ArgumentParser(
+        prog="arabcheck scan",
+        description="فحص النصوص باستخدام قواعد ArabCheck.",
+    )
+    parser.add_argument("text", nargs="?", help="النص المراد فحصه")
+    parser.add_argument("-f", "--file", type=Path, help="قراءة من ملف")
+    parser.add_argument(
+        "--rules",
+        help="أسماء القواعد مفصولة بفواصل، مثل hamzat_qat",
+    )
+    parser.add_argument("-j", "--json", action="store_true")
+    parser.add_argument("-q", "--quiet", action="store_true")
+
+    args = parser.parse_args(argv)
+    text = read_input(args, parser)
+    scanner = Scanner()
+    rule_names = (
+        [name.strip() for name in args.rules.split(",") if name.strip()]
+        if args.rules else None
+    )
+
+    try:
+        issues = scanner.scan(text, rule_names=rule_names)
+    except ValueError as exc:
+        parser.error(str(exc))
+
+    if args.json:
+        print(json.dumps({
+            "input": text,
+            "issues": issues,
+            "meta": {
+                "rules": rule_names or scanner.available_rules(),
+                "version": __version__,
+            },
+        }, ensure_ascii=False, indent=2))
+    else:
+        if not args.quiet:
+            print(text)
+        for issue in issues:
+            print(f"⚠️  {issue['message']}", file=sys.stderr)
+
+    return 1 if issues else 0
+
+
 def main(argv=None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+
+    if argv and argv[0] == "scan":
+        return run_scan(argv[1:])
+
     parser = build_parser()
     args = parser.parse_args(argv)
     text = read_input(args, parser)
