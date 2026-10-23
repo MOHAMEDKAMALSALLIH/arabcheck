@@ -32,6 +32,7 @@ class ArabCheck:
         new_issues = HamzatQatRule().check(text)
         return [{
             "type": issue["type"], "word": issue["word"],
+            "intended": issue["intended"],
             "position": issue["position"], "location": issue["location"],
             "severity": issue["severity"], "message": issue["message"],
         } for issue in new_issues]
