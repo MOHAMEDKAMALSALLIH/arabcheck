@@ -1,7 +1,7 @@
 from arabcheck.rules.hamza import HamzatQatRule
 
 
-def test_detects_hamzat_qat_words():
+def test_ignores_valid_words():
     rule = HamzatQatRule()
     # verify the rule correctly ignores words like "الأمر", "الإنسان", and "الأحمد"
     issues = rule.check("الأحمد الأمر الإنسان الكتاب")
