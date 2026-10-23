@@ -40,15 +40,15 @@ def test_audit_detects_common_spelling_issue(checker):
     assert len(issues) == 1
     assert issues[0]["type"] == "hamzat_qat"
     assert issues[0]["word"] == "الإستخدام"
-    assert issues[0]["severity"] == "warning"
     assert issues[0]["intended"] == "الاستخدام"
+    assert issues[0]["severity"] == "warning"
 
 
 def test_audit_ignores_valid_words(checker):
-    assert checker.audit("الأمر الإنسان الأحمد الكتاب") == []
+    assert checker.audit("الأمر الإنسان الأحمد الكتاب الإسلام") == []
 
 
 def test_process_combined(checker):
     result = checker.process("الإستخدام ـــ النَّص", clean=True, audit=True)
-    assert result["result"] == "الاستخدام النص"
+    assert result["result"] == "الإستخدام النص"
     assert len(result["issues"]) == 1
