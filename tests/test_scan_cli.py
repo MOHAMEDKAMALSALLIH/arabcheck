@@ -21,13 +21,13 @@ def test_scan_help_is_available():
 
 
 def test_scan_text_with_json_reports_hamza_issue():
-    result = run_cli("scan", "الأحمد الكتاب", "--json")
+    result = run_cli("scan", "الإستخدام الكتاب", "--json")
     assert result.returncode == 1
 
     data = json.loads(result.stdout)
     assert len(data["issues"]) == 1
     assert data["issues"][0]["rule"] == "hamzat_qat"
-    assert data["issues"][0]["word"] == "الأحمد"
+    assert data["issues"][0]["word"] == "الإستخدام"
 
 
 def test_scan_clean_text_returns_zero():
@@ -40,7 +40,7 @@ def test_scan_clean_text_returns_zero():
 
 def test_scan_can_select_hamza_rule():
     result = run_cli(
-        "scan", "الأحمد الكتاب",
+        "scan", "الإستخدام الكتاب",
         "--rules", "hamzat_qat", "--json",
     )
     assert result.returncode == 1

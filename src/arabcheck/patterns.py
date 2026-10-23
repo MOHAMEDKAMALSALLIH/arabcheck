@@ -17,7 +17,8 @@ class Patterns:
     WHITESPACE = re.compile(r"\s+")
 
     # همزة قطع بعد "ال" التعريف
-    HAMZAT_QAT = re.compile(r"^ال[أإآ]")
+    # Target common structural errors (forms VII, VIII, X masdars) to avoid false positives.
+    HAMZAT_QAT = re.compile(r"^الإ(ست|خت|جت|شت|عت|قت|بت|رت)")
 
     # للتوحيد — كل واحد منفصل عشان يبقى واضح
     ALIF_VARIANTS = re.compile(r"[إأآٱ]")
