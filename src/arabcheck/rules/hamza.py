@@ -10,7 +10,7 @@ class HamzatQatRule(BaseRule):
     """Detect words starting with 'ال' followed by hamzat qat."""
 
     name = "hamzat_qat"
-    description = "احتمال وجود همزة قطع بعد أل التعريف."
+    description = "احتمال وجود همزة قطع خاطئة في كلمة تبدو كمصدر خماسي أو سداسي."
     severity = "warning"
 
     def __init__(self) -> None:
@@ -20,14 +20,15 @@ class HamzatQatRule(BaseRule):
         issues = []
 
         for position, word in enumerate(text.split(), start=1):
-            if self.patterns.HAMZAT_QAT.match(word):
+            if self.patterns.HAMZAT_QAT_SUSPICIOUS.match(word):
                 issues.append({
                     "rule": self.name,
                     "severity": self.severity,
                     "word": word,
                     "position": position,
                     "message": (
-                        f"احتمال خطأ: '{word}' تبدأ بـ 'ال' + همزة قطع."
+                        f"للمراجعة: '{word}' قد تحتوي على همزة قطع خاطئة. "
+                        "هذا الفحص يعتمد على نمط شائع ولا يمكنه الجزم بصحة الكلمة لغوياً."
                     ),
                 })
 

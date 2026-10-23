@@ -29,14 +29,14 @@ def test_normalize_taa_marbuta_enabled(checker):
     assert checker.normalize("مدرسة", taa_marbuta=True) == "مدرسه"
 
 def test_audit_detects_hamzat_qat(checker):
-    issues = checker.audit("الأمر")
+    issues = checker.audit("الإستخدام")
     assert len(issues) == 1
     assert issues[0]["type"] == "hamzat_qat"
 
 def test_audit_clean_text(checker):
-    assert checker.audit("السلام عليكم") == []
+    assert checker.audit("السلام عليكم الأمر") == []
 
 def test_process_combined(checker):
-    result = checker.process("الأَمْرُ ـــ الأَوَّل", clean=True, audit=True)
-    assert result["result"] == "الأمر الأول"
+    result = checker.process("الإستخدام ـــ الإختبار", clean=True, audit=True)
+    assert result["result"] == "الإستخدام الإختبار"
     assert len(result["issues"]) == 2

@@ -16,8 +16,11 @@ class Patterns:
     TATWEEL = re.compile("\u0640")
     WHITESPACE = re.compile(r"\s+")
 
-    # همزة قطع بعد "ال" التعريف
-    HAMZAT_QAT = re.compile(r"^ال[أإآ]")
+    # همزة قطع بعد "ال" التعريف (أخطاء شائعة في مصادر وأفعال خماسية وسداسية)
+    # This targets specific structural prefixes that should have hamzat wasl,
+    # avoiding false positives on correct words like الأمر, الإنسان.
+    # Matches words starting with: الإست، الإخت، الإجت، الإنت، الإشت، الإفت، الإنف، الإكت
+    HAMZAT_QAT_SUSPICIOUS = re.compile(r"^الإ(ست|خت|جت|نت|شت|فت|نف|كت)")
 
     # للتوحيد — كل واحد منفصل عشان يبقى واضح
     ALIF_VARIANTS = re.compile(r"[إأآٱ]")
