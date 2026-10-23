@@ -18,6 +18,8 @@ Each issue result must include:
 ### Phase 3 — Arabic Text Quality Rules (Planned)
 Rules for invisible Unicode characters, visual homoglyphs/confusables, mojibake, hamza spelling issues, and whitespace/punctuation quality.
 
+*(Status: The "hamzat_qat" rule is partially implemented, with known false positives. It flags correct words such as "الأمر" and "الإنسان".)*
+
 **Important principle:** Rules must flag suspicious cases for human review. They must not present uncertain or suspicious cases as confirmed errors. Document uncertainty and avoid claiming linguistic correctness without sufficient evidence.
 
 ### Phase 4 — Unified Scan CLI (Planned)
