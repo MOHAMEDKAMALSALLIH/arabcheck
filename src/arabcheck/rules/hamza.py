@@ -1,6 +1,7 @@
 """Conservative rule for common hamzat-wasl spelling mistakes."""
 
 import re
+import unicodedata
 from typing import Dict, List
 from .base import BaseRule
 
@@ -35,20 +36,21 @@ class HamzatQatRule(BaseRule):
         "[\\u0610-\\u061A\\u064B-\\u065F\\u0670"
         "\\u06D6-\\u06DC\\u06DF-\\u06E8\\u06EA-\\u06ED]"
     )
-    PUNCTUATION = re.compile(r"^[^\\w]+|[^\\w]+$", re.UNICODE)
-    PREFIXES = ("وال", "بال", "كال", "فال", "لل", "ال", "و", "ف", "ب", "ك", "ل")
+    PREFIXES = ("وال", "بال", "كال", "فال", "لل", "و", "ف", "ب", "ك", "ل")
 
     @classmethod
     def _lookup_form(cls, word: str) -> str:
         normalized = cls.TASHKEEL.sub("", word).replace("ـ", "")
-        normalized = cls.PUNCTUATION.sub("", normalized)
+        # Remove punctuation/symbols at the edges, preserving the original word for output.
+        while normalized and unicodedata.category(normalized[0])[0] in ("P", "S"):
+            normalized = normalized[1:]
+        while normalized and unicodedata.category(normalized[-1])[0] in ("P", "S"):
+            normalized = normalized[:-1]
         if normalized in cls.SUSPICIOUS_FORMS:
             return normalized
         for prefix in cls.PREFIXES:
             if normalized.startswith(prefix) and len(normalized) > len(prefix):
                 candidate = normalized[len(prefix):]
-                if prefix in ("و", "ف", "ب", "ك"):
-                    candidate = "ال" + candidate
                 if candidate in cls.SUSPICIOUS_FORMS:
                     return candidate
         return normalized
