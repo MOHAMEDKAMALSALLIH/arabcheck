@@ -1,3 +1,5 @@
+import pytest
+
 from arabcheck.rules.hamza import HamzatQatRule
 
 
@@ -38,3 +40,31 @@ def test_word_position_counts_tokens():
     issues = HamzatQatRule().check("هذا هو الإختبار")
     assert len(issues) == 1
     assert issues[0]["position"] == 3
+
+
+@pytest.mark.parametrize(
+    "word, expected_intended",
+    [
+        ("الإستخدام", "الاستخدام"),
+        ("والإستخدام", "والاستخدام"),
+        ("بالإستخدام", "بالاستخدام"),
+        ("للإستخدام", "للاستخدام"),
+        ("،«للإستخدام».", "للاستخدام"),
+        ("وللإستخدام", "وللاستخدام"),
+        ("فللإستخدام", "فللاستخدام"),
+    ],
+)
+def test_hamzat_qat_prefixes_and_intended(word, expected_intended):
+    issues = HamzatQatRule().check(word)
+
+    assert len(issues) == 1
+    assert issues[0]["word"] == word
+    assert issues[0]["intended"] == expected_intended
+
+
+@pytest.mark.parametrize(
+    "valid_word",
+    ["الأمر", "الإسلام", "والأمر", "للإسلام", "الاستخدام"],
+)
+def test_hamzat_qat_ignores_valid_words(valid_word):
+    assert HamzatQatRule().check(valid_word) == []
