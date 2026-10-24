@@ -33,8 +33,8 @@ class HamzatQatRule(BaseRule):
     }
 
     TASHKEEL = re.compile(
-        "[\\u0610-\\u061A\\u064B-\\u065F\\u0670"
-        "\\u06D6-\\u06DC\\u06DF-\\u06E8\\u06EA-\\u06ED]"
+        r"[\u0610-\u061A\u064B-\u065F\u0670"
+        r"\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]"
     )
     PREFIXES = ("وال", "بال", "كال", "فال", "لل", "و", "ف", "ب", "ك", "ل")
 
