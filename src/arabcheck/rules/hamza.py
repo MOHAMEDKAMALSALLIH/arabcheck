@@ -2,7 +2,8 @@
 
 import re
 import unicodedata
-from typing import Dict, List
+from typing import Dict, List, Optional
+
 from .base import BaseRule
 
 
@@ -36,30 +37,49 @@ class HamzatQatRule(BaseRule):
         r"[\u0610-\u061A\u064B-\u065F\u0670"
         r"\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]"
     )
-    PREFIXES = ("وال", "بال", "كال", "فال", "لل", "و", "ف", "ب", "ك", "ل")
+    # Prefixes that appear before the article "ال".
+    DIRECT_PREFIXES = ("وب", "وف", "وك", "فب", "فك", "و", "ف", "ب", "ك")
+    # Prepositions ending in lam, where the alif of the article is omitted.
+    LAM_PREFIXES = ("ولل", "فلل", "لل")
 
     @classmethod
-    def _lookup_form(cls, word: str) -> str:
+    def _clean_word(cls, word: str) -> str:
         normalized = cls.TASHKEEL.sub("", word).replace("ـ", "")
-        # Remove punctuation/symbols at the edges, preserving the original word for output.
         while normalized and unicodedata.category(normalized[0])[0] in ("P", "S"):
             normalized = normalized[1:]
         while normalized and unicodedata.category(normalized[-1])[0] in ("P", "S"):
             normalized = normalized[:-1]
+        return normalized
+
+    @classmethod
+    def _resolve_intended(cls, word: str) -> Optional[str]:
+        """Return the suggested correct form with its prefix preserved."""
+        normalized = cls._clean_word(word)
+
         if normalized in cls.SUSPICIOUS_FORMS:
-            return normalized
-        for prefix in cls.PREFIXES:
+            return cls.SUSPICIOUS_FORMS[normalized]
+
+        # E.g. للإستخدام -> للاستخدام, وللإستخدام -> وللاستخدام.
+        for prefix in cls.LAM_PREFIXES:
+            if normalized.startswith(prefix) and len(normalized) > len(prefix):
+                candidate = "ال" + normalized[len(prefix):]
+                if candidate in cls.SUSPICIOUS_FORMS:
+                    corrected_base = cls.SUSPICIOUS_FORMS[candidate]
+                    return prefix + corrected_base[2:]
+
+        # E.g. والإستخدام -> والاستخدام, بالإستخدام -> بالاستخدام.
+        for prefix in cls.DIRECT_PREFIXES:
             if normalized.startswith(prefix) and len(normalized) > len(prefix):
                 candidate = normalized[len(prefix):]
                 if candidate in cls.SUSPICIOUS_FORMS:
-                    return candidate
-        return normalized
+                    return prefix + cls.SUSPICIOUS_FORMS[candidate]
+
+        return None
 
     def check(self, text: str) -> List[Dict]:
         issues = []
         for position, word in enumerate(text.split(), start=1):
-            lookup = self._lookup_form(word)
-            intended = self.SUSPICIOUS_FORMS.get(lookup)
+            intended = self._resolve_intended(word)
             if intended is None:
                 continue
             issues.append({
