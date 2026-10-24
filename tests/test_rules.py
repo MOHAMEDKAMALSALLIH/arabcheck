@@ -68,3 +68,21 @@ def test_hamzat_qat_prefixes_and_intended(word, expected_intended):
 )
 def test_hamzat_qat_ignores_valid_words(valid_word):
     assert HamzatQatRule().check(valid_word) == []
+
+
+@pytest.mark.parametrize(
+    "word, expected_intended",
+    [
+        ("الإِسْتِخْدام", "الاستخدام"),
+        ("الإـستخدام", "الاستخدام"),
+        ("،«للإِسْتِخْدام».", "للاستخدام"),
+    ],
+)
+def test_hamzat_qat_handles_diacritics_tatweel_and_punctuation(
+    word, expected_intended
+):
+    issues = HamzatQatRule().check(word)
+
+    assert len(issues) == 1
+    assert issues[0]["word"] == word
+    assert issues[0]["intended"] == expected_intended
