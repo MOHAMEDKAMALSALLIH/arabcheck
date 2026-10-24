@@ -30,7 +30,8 @@ def test_issue_has_compatible_fields_and_human_review_message():
     assert issue["position"] == 1
     assert issue["location"] == {"word": 1}
     assert "الاستخدام" in issue["message"]
-    assert "المراجعة البشرية" in issue["message"]
+    assert "تحذير" in issue["message"]
+    assert "آلياً مؤكداً" in issue["message"]
 
 
 def test_word_position_counts_tokens():
