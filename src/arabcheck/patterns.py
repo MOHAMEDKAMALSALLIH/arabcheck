@@ -9,11 +9,11 @@ class Patterns:
 
     # التشكيل: حركات + علامات قرآنية + ألف خنجرية
     TASHKEEL = re.compile(
-        "[\\u0610-\\u061A\\u064B-\\u065F\\u0670"
-        "\\u06D6-\\u06DC\\u06DF-\\u06E8\\u06EA-\\u06ED]"
+        r"[\u0610-\u061A\u064B-\u065F\u0670"
+        r"\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]"
     )
 
-    TATWEEL = re.compile("\\u0640")
+    TATWEEL = re.compile(r"\u0640")
     WHITESPACE = re.compile(r"\s+")
 
     # للتوحيد — كل واحد منفصل عشان يبقى واضح
