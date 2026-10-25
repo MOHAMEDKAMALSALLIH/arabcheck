@@ -29,19 +29,13 @@ class ArabCheck:
 
     def audit(self, text: str) -> list:
         from .rules.hamza import HamzatQatRule
-
-        rule = HamzatQatRule()
-        new_issues = rule.check(text)
-
-        return [
-            {
-                "type": issue["rule"],
-                "word": issue["word"],
-                "position": issue["position"],
-                "message": issue["message"],
-            }
-            for issue in new_issues
-        ]
+        new_issues = HamzatQatRule().check(text)
+        return [{
+            "type": issue["type"], "word": issue["word"],
+            "intended": issue["intended"],
+            "position": issue["position"], "location": issue["location"],
+            "severity": issue["severity"], "message": issue["message"],
+        } for issue in new_issues]
 
     def process(self, text, *, clean=False, normalize=False, audit=False):
         issues = self.audit(text) if audit else []

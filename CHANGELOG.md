@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Arabic README (`README.ar.md`)
 
 ## [Unreleased]
+
+### Added
+- Modular rule engine with a scanner and selectable rules.
+- `arabcheck scan` command with rule selection and JSON output.
+- Conservative `hamzat_qat` rule for a defined set of suspicious forms.
+
+### Changed
+- Integrated the new rule system with the existing audit workflow.
+
 ### Planned
 - Extended audit rules (taa marbuta, tanween)
 - Dataset loading (CSV, JSONL)

@@ -82,10 +82,10 @@ ArabCheck makes cleaning and auditing this data a one-liner.
 
 **⚠️ Warning**: Normalization loses linguistic information. Use it for search, indexing, or NLP pipelines only.
 
-### 3. Audit text
+### 3. Audit text (Legacy)
 
-    arabcheck "الأمر بالأمر" --audit
-    # ⚠️ احتمال خطأ: 'الأمر' تبدأ بـ 'ال' + همزة قطع.
+    arabcheck "الإستخدام" --audit
+    # ⚠️  احتمال خطأ إملائي: 'الإستخدام'؛ الصيغة المقترحة للمراجعة هي 'الاستخدام'. تحذير للمراجعة البشرية، وليس تصحيحاً آلياً مؤكداً.
 
 ### 4. JSON output
 
@@ -101,21 +101,58 @@ Returns:
         "cleaned": true,
         "normalized": false,
         "audited": false,
-        "version": "0.1.0"
+        "version": "0.2.0"
       }
     }
 
-### 5. Read from file
+### 5. Scan text using specific rules
+
+    arabcheck scan "الإستخدام" --rules hamzat_qat
+
+Returns:
+
+    الإستخدام
+     ⚠️  احتمال خطأ إملائي: 'الإستخدام'؛ الصيغة المقترحة للمراجعة هي 'الاستخدام'. تحذير للمراجعة البشرية، وليس تصحيحاً آلياً مؤكداً.
+
+### 6. Scan text with JSON output
+
+    arabcheck scan "الإستخدام" --rules hamzat_qat --json
+
+Returns:
+
+    {
+      "input": "الإستخدام",
+      "issues": [
+        {
+          "rule": "hamzat_qat",
+          "message": "احتمال خطأ إملائي: 'الإستخدام'؛ الصيغة المقترحة للمراجعة هي 'الاستخدام'. تحذير للمراجعة البشرية، وليس تصحيحاً آلياً مؤكداً.",
+          "word": "الإستخدام",
+          "intended": "الاستخدام",
+          "position": 0,
+          "severity": "warning"
+        }
+      ],
+      "meta": {
+        "rules": [
+          "hamzat_qat"
+        ],
+        "version": "0.2.0"
+      }
+    }
+
+### 7. Read from file
 
     arabcheck --file dataset.txt --clean
 
-### 6. From stdin
+### 8. From stdin
 
     cat article.txt | arabcheck --clean
 
 ---
 
 ## CLI Reference
+
+### Main Command
 
     usage: arabcheck [-h] [-f FILE] [-c] [-n] [-a] [-j] [-q] [-V] [text]
 
@@ -125,18 +162,30 @@ Returns:
 | `-f, --file FILE` | Read from file |
 | `-c, --clean` | Remove tashkeel, tatweel, extra spaces |
 | `-n, --normalize` | Normalize letters |
-| `-a, --audit` | Audit spelling issues |
+| `-a, --audit` | Audit spelling issues (Legacy) |
 | `-j, --json` | JSON output |
 | `-q, --quiet` | Suppress output |
 | `-V, --version` | Show version |
+
+### Scan Command
+
+    usage: arabcheck scan [-h] [-f FILE] [--rules RULES] [-j] [-q] [text]
+
+| Option | Description |
+|--------|-------------|
+| `-h, --help` | Show help |
+| `-f, --file FILE` | Read from file |
+| `--rules RULES` | Comma-separated list of rules to run (e.g. `hamzat_qat`) |
+| `-j, --json` | JSON output |
+| `-q, --quiet` | Suppress output |
 
 ### Exit Codes
 
 | Code | Meaning |
 |:----:|:--------|
 | `0` | Success, no issues |
-| `1` | Issues found (with `--audit`) |
-| `2` | Input error |
+| `1` | Issues found (with `--audit` or `scan`) |
+| `2` | Input error or invalid arguments |
 
 ---
 
@@ -179,7 +228,7 @@ Run them:
     pip install -e ".[dev]"
     pytest
 
-**22 tests** covering core and CLI — all passing ✅
+Tests covering core and CLI — all passing ✅
 
 ---
 

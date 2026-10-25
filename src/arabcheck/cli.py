@@ -54,10 +54,13 @@ def run_scan(argv) -> int:
     args = parser.parse_args(argv)
     text = read_input(args, parser)
     scanner = Scanner()
-    rule_names = (
-        [name.strip() for name in args.rules.split(",") if name.strip()]
-        if args.rules else None
-    )
+
+    if args.rules is not None:
+        rule_names = [name.strip() for name in args.rules.split(",") if name.strip()]
+        if not rule_names:
+            parser.error("Error: --rules argument cannot be empty or just commas.")
+    else:
+        rule_names = None
 
     try:
         issues = scanner.scan(text, rule_names=rule_names)
