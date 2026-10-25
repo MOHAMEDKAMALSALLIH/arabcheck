@@ -20,30 +20,42 @@ def test_scan_help_is_available():
     assert "--json" in result.stdout
 
 
-def test_scan_text_with_json_reports_hamza_issue():
-    result = run_cli("scan", "الأحمد الكتاب", "--json")
+def test_scan_json_reports_suspicious_hamza_and_location():
+    result = run_cli("scan", "الأحمد الإستخدام الكتاب", "--json")
     assert result.returncode == 1
-
     data = json.loads(result.stdout)
     assert len(data["issues"]) == 1
-    assert data["issues"][0]["rule"] == "hamzat_qat"
-    assert data["issues"][0]["word"] == "الأحمد"
+    issue = data["issues"][0]
+    assert issue["rule"] == "hamzat_qat"
+    assert issue["word"] == "الإستخدام"
+    assert issue["intended"] == "الاستخدام"
+    assert issue["position"] == 2
 
 
 def test_scan_clean_text_returns_zero():
-    result = run_cli("scan", "مرحبا بكم", "--json")
+    result = run_cli("scan", "الأحمد الأمر الإنسان", "--json")
     assert result.returncode == 0
-
-    data = json.loads(result.stdout)
-    assert data["issues"] == []
+    assert json.loads(result.stdout)["issues"] == []
 
 
 def test_scan_can_select_hamza_rule():
     result = run_cli(
-        "scan", "الأحمد الكتاب",
-        "--rules", "hamzat_qat", "--json",
+        "scan", "الإستخدام", "--rules", "hamzat_qat", "--json",
     )
     assert result.returncode == 1
+    assert len(json.loads(result.stdout)["issues"]) == 1
 
-    data = json.loads(result.stdout)
-    assert len(data["issues"]) == 1
+
+def test_scan_unknown_rule_is_reported_as_usage_error():
+    result = run_cli("scan", "نص", "--rules", "missing_rule", "--json")
+    assert result.returncode == 2
+
+def test_scan_empty_rules_string_is_reported_as_usage_error():
+    result = run_cli("scan", "نص", "--rules", "", "--json")
+    assert result.returncode == 2
+    assert "cannot be empty or just commas" in result.stderr
+
+def test_scan_comma_only_rules_is_reported_as_usage_error():
+    result = run_cli("scan", "نص", "--rules", ",,", "--json")
+    assert result.returncode == 2
+    assert "cannot be empty or just commas" in result.stderr
