@@ -27,6 +27,11 @@ def test_scanner_rejects_unknown_rule():
         Scanner().scan("الإستخدام", rule_names=["not_a_rule"])
 
 
+def test_scanner_rejects_duplicate_rule_selection():
+    with pytest.raises(ValueError, match="Duplicate rule selection"):
+        Scanner().scan("الإستخدام", rule_names=["hamzat_qat", "hamzat_qat"])
+
+
 def test_scanner_returns_no_issues_for_empty_or_valid_text():
     scanner = Scanner()
     assert scanner.scan("") == []
