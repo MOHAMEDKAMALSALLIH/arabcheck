@@ -86,3 +86,8 @@ def test_hamzat_qat_handles_diacritics_tatweel_and_punctuation(
     assert len(issues) == 1
     assert issues[0]["word"] == word
     assert issues[0]["intended"] == expected_intended
+
+def test_every_suspicious_form_has_its_expected_suggestion():
+    for source, expected in HamzatQatRule.SUSPICIOUS_FORMS.items():
+        assert HamzatQatRule._resolve_intended(source) == expected
+
