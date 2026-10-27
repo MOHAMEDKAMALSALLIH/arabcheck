@@ -44,8 +44,20 @@ def test_audit_detects_common_spelling_issue(checker):
     assert issues[0]["severity"] == "warning"
 
 
+
+def test_audit_clean_text(checker):
+    assert checker.audit("السلام عليكم") == []
+
+
 def test_audit_ignores_valid_words(checker):
     assert checker.audit("الأمر الإنسان الأحمد الكتاب الإسلام") == []
+
+
+
+def test_process_combined_valid_words(checker):
+    result = checker.process("الأَمْرُ ـــ الأَوَّل", clean=True, audit=True)
+    assert result["result"] == "الأمر الأول"
+    assert result["issues"] == []
 
 
 def test_process_combined(checker):
