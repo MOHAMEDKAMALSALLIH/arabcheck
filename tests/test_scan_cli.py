@@ -49,3 +49,10 @@ def test_scan_can_select_hamza_rule():
 def test_scan_unknown_rule_is_reported_as_usage_error():
     result = run_cli("scan", "نص", "--rules", "missing_rule", "--json")
     assert result.returncode == 2
+
+
+def test_scan_empty_rules_is_reported_as_usage_error():
+    for rules in ("", " , ", ",,,"):
+        result = run_cli("scan", "الإستخدام", "--rules", rules, "--json")
+        assert result.returncode == 2
+        assert "قاعدة واحدة على الأقل" in result.stderr
