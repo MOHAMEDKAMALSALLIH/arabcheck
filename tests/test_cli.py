@@ -52,7 +52,7 @@ def test_cli_audit_clean_returns_zero():
 
 
 def test_cli_audit_issues_returns_one():
-    result = run_cli("الأمر", "--audit")
+    result = run_cli("الإستخدام", "--audit")
     assert result.returncode == 1
 
 
@@ -69,7 +69,7 @@ def test_cli_json_output():
 
 
 def test_cli_json_with_audit():
-    result = run_cli("الأمر", "--audit", "--json")
+    result = run_cli("الإستخدام", "--audit", "--json")
     data = json.loads(result.stdout)
     assert len(data["issues"]) == 1
     assert data["issues"][0]["type"] == "hamzat_qat"

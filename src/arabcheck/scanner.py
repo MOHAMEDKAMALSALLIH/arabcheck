@@ -35,6 +35,15 @@ class Scanner:
         else:
             selected_names = list(rule_names)
 
+        duplicates = sorted(
+            name for name in set(selected_names)
+            if selected_names.count(name) > 1
+        )
+        if duplicates:
+            raise ValueError(
+                "Duplicate rule selection: {}".format(", ".join(duplicates))
+            )
+
         unknown = sorted(set(selected_names) - set(self.rules))
         if unknown:
             raise ValueError(
