@@ -64,15 +64,19 @@ class InvisibleRule(BaseRule):
             codepoint = ord(char)
 
             position = None
-            if word_spans:
-                for word_number, (start, end) in enumerate(word_spans, start=1):
-                    if start <= offset <= end:
-                        position = word_number
-                        break
-                    if start > offset:
-                        position = max(1, word_number - 1)
-                        break
+            for word_number, (start, end) in enumerate(word_spans, start=1):
+                # The character belongs to a word only when no whitespace
+                # separates it from that word.
+                if start <= offset <= end:
                     position = word_number
+                    break
+                if offset < start:
+                    if not any(c.isspace() for c in text[offset:start]):
+                        position = word_number
+                    break
+                if offset > end:
+                    if not any(c.isspace() for c in text[end + 1:offset + 1]):
+                        position = word_number
 
             line_number = 1
             for candidate, start in enumerate(line_starts, start=1):
