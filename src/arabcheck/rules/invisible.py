@@ -31,10 +31,13 @@ class InvisibleRule(BaseRule):
     def check(self, text: str) -> List[Dict]:
         issues = []
         word_spans = list(re.finditer(r"\S+", text))
-        line_starts = [0]
-        line_starts.extend(
-            index + 1 for index, char in enumerate(text) if char == "\n"
-        )
+        # split("\\n") keeps line numbering explicit.
+        lines = text.split("\n")
+        line_starts = []
+        current_offset = 0
+        for line in lines:
+            line_starts.append(current_offset)
+            current_offset += len(line) + 1
 
         for offset, char in enumerate(text):
             codepoint = ord(char)
