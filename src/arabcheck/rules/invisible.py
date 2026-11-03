@@ -37,13 +37,20 @@ class InvisibleRule(BaseRule):
             )
             if is_reported:
                 reported_offsets.add(offset)
+                # Some reportable Cc controls are also whitespace (for
+                # example VT, FF, and NEL). Preserve their separator role
+                # when building word spans, even though they remain issues.
+                if char.isspace():
+                    visible_chars.append(char)
+                    original_offsets.append(offset)
             else:
                 visible_chars.append(char)
                 original_offsets.append(offset)
 
-        # Build word spans after omitting reportable characters. This keeps an
-        # invisible character inside a word from splitting that word, while
-        # ensuring an invisible-only input has no invented word positions.
+        # Build word spans without reportable non-whitespace characters.
+        # This keeps an invisible character inside a word from splitting it,
+        # while preserving whitespace boundaries and avoiding invented
+        # positions for invisible-only input.
         visible_text = "".join(visible_chars)
         word_spans = []
         for match in re.finditer(r"\S+", visible_text):
