@@ -155,6 +155,19 @@ Returns:
       }
     }
 
+
+### Default scan rules
+
+When `--rules` is omitted, `arabcheck scan` runs both `hamzat_qat` and `invisible`. The invisible rule reports selected invisible and control characters for human review; it never changes the input. Therefore, text containing a reported character (for example, U+200B ZERO WIDTH SPACE or a BOM) produces an issue and exit code `1`, even when its spelling is otherwise correct.
+
+To run only the legacy hamza rule:
+
+    arabcheck scan "النص" --rules hamzat_qat
+
+To run only the invisible-character rule:
+
+    arabcheck scan "النص" --rules invisible
+
 ### 7. Read from file
 
     arabcheck --file dataset.txt --clean

@@ -4,13 +4,18 @@ from typing import Dict, List, Optional, Sequence
 
 from .rules.base import BaseRule
 from .rules.hamza import HamzatQatRule
+from .rules.invisible import InvisibleRule
 
 
 class Scanner:
     """Run selected audit rules without changing legacy core behavior."""
 
     def __init__(self, rules: Optional[Sequence[BaseRule]] = None) -> None:
-        selected = list(rules) if rules is not None else [HamzatQatRule()]
+        selected = (
+            list(rules)
+            if rules is not None
+            else [HamzatQatRule(), InvisibleRule()]
+        )
         self.rules: Dict[str, BaseRule] = {}
 
         for rule in selected:
