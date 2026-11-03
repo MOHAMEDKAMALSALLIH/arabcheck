@@ -46,13 +46,13 @@ class InvisibleRule(BaseRule):
         # ensuring an invisible-only input has no invented word positions.
         visible_text = "".join(visible_chars)
         word_spans = []
-        for match in re.finditer(r"\\S+", visible_text):
+        for match in re.finditer(r"\S+", visible_text):
             word_spans.append((
                 original_offsets[match.start()],
                 original_offsets[match.end() - 1],
             ))
 
-        lines = text.split("\\n")
+        lines = text.split("\n")
         line_starts = []
         current_offset = 0
         for line in lines:
