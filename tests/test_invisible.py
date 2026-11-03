@@ -63,7 +63,7 @@ def test_invisible_only_text_has_no_word_position():
 
 
 def test_invisible_characters_inside_words_do_not_split_word_positions():
-    issues = InvisibleRule().check("أ​ب ت⁠ث")
+    issues = InvisibleRule().check("أ\u200bب ت\u2060ث")
     assert [issue["position"] for issue in issues] == [1, 2]
 
 
