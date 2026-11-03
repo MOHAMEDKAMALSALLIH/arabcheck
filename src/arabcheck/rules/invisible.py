@@ -24,34 +24,55 @@ class InvisibleRule(BaseRule):
 
     def check(self, text: str) -> List[Dict]:
         issues = []
-        word_spans = list(re.finditer(r"\S+", text))
-        lines = text.split("\n")
+        reported_offsets = set()
+        visible_chars = []
+        original_offsets = []
+
+        for offset, char in enumerate(text):
+            codepoint = ord(char)
+            category = unicodedata.category(char)
+            is_reported = (
+                codepoint in self.REPORTED_CODEPOINTS
+                or (category == "Cc" and codepoint not in self.IGNORED_C0_C1)
+            )
+            if is_reported:
+                reported_offsets.add(offset)
+            else:
+                visible_chars.append(char)
+                original_offsets.append(offset)
+
+        # Build word spans after omitting reportable characters. This keeps an
+        # invisible character inside a word from splitting that word, while
+        # ensuring an invisible-only input has no invented word positions.
+        visible_text = "".join(visible_chars)
+        word_spans = []
+        for match in re.finditer(r"\\S+", visible_text):
+            word_spans.append((
+                original_offsets[match.start()],
+                original_offsets[match.end() - 1],
+            ))
+
+        lines = text.split("\\n")
         line_starts = []
         current_offset = 0
         for line in lines:
             line_starts.append(current_offset)
             current_offset += len(line) + 1
 
-        for offset, char in enumerate(text):
+        for offset in sorted(reported_offsets):
+            char = text[offset]
             codepoint = ord(char)
-            category = unicodedata.category(char)
-            if not (
-                codepoint in self.REPORTED_CODEPOINTS
-                or (category == "Cc" and codepoint not in self.IGNORED_C0_C1)
-            ):
-                continue
 
-            # Every reported character is non-whitespace, so it belongs to a
-            # token matched by \S+, even when the token contains no letters.
-            position = 1
-            for word_number, span in enumerate(word_spans, start=1):
-                if span.start() <= offset < span.end():
+            position = None
+            if word_spans:
+                for word_number, (start, end) in enumerate(word_spans, start=1):
+                    if start <= offset <= end:
+                        position = word_number
+                        break
+                    if start > offset:
+                        position = max(1, word_number - 1)
+                        break
                     position = word_number
-                    break
-                if span.start() > offset:
-                    position = max(1, word_number - 1)
-                    break
-                position = word_number
 
             line_number = 1
             for candidate, start in enumerate(line_starts, start=1):
