@@ -12,7 +12,7 @@ REPORTED_EXPLICIT = [
     *range(0xE0000, 0xE0080),
 ]
 REPORTED_C0_C1 = [
-    cp for cp in range(0x0000, 0x0100)
+    cp for cp in range(0x110000)
     if unicodedata.category(chr(cp)) == "Cc" and cp not in {9, 10, 13}
 ]
 NEVER_REPORTED = [
