@@ -51,32 +51,32 @@ def test_persian_zwnj_is_not_reported():
 
 
 def test_multiple_invisibles_in_one_word_keep_same_word_position():
-    issues = InvisibleRule().check("هذا ب\\u200bت\\u2060ث")
+    issues = InvisibleRule().check("هذا ب\u200bت\u2060ث")
     assert [issue["position"] for issue in issues] == [2, 2]
     assert [issue["location"]["word"] for issue in issues] == [2, 2]
 
 
 def test_invisible_only_text_has_token_positions():
-    issues = InvisibleRule().check("\\u200b \\u2060")
+    issues = InvisibleRule().check("\u200b \u2060")
     assert [issue["position"] for issue in issues] == [1, 2]
     assert [issue["location"]["word"] for issue in issues] == [1, 2]
 
 
 def test_bom_at_start_has_file_bom_message():
-    issue = InvisibleRule().check("\\ufeffمرحبا")[0]
+    issue = InvisibleRule().check("\ufeffمرحبا")[0]
     assert issue["char"] == "U+FEFF"
     assert issue["location"]["offset"] == 0
     assert "BOM" in issue["message"]
 
 
 def test_bom_in_middle_has_general_invisible_message():
-    issue = InvisibleRule().check("مرح\\ufeffبا")[0]
+    issue = InvisibleRule().check("مرح\ufeffبا")[0]
     assert issue["location"]["offset"] == 3
     assert "BOM" not in issue["message"]
 
 
 def test_offsets_lines_columns_and_word_positions():
-    issues = InvisibleRule().check("أول\\nثا\\u200bني كلمة\\nثالث")
+    issues = InvisibleRule().check("أول\nثا\u200bني كلمة\nثالث")
 
     issue = issues[0]
     assert issue["position"] == 2
@@ -86,7 +86,7 @@ def test_offsets_lines_columns_and_word_positions():
 
 
 def test_crlf_line_and_column_offsets():
-    issues = InvisibleRule().check("أول\\r\\nثا\\u200bني\\r\\nثالث")
+    issues = InvisibleRule().check("أول\r\nثا\u200bني\r\nثالث")
     issue = issues[0]
     assert issue["location"] == {
         "word": 2, "line": 2, "column": 3, "offset": 7,
@@ -94,16 +94,16 @@ def test_crlf_line_and_column_offsets():
 
 
 def test_nul_and_escape_controls_are_reported():
-    issues = InvisibleRule().check("أ\\x00ب\\x1bج")
+    issues = InvisibleRule().check("أ\x00ب\x1bج")
     assert [issue["char"] for issue in issues] == ["U+0000", "U+001B"]
 
 
 def test_tabs_newlines_and_carriage_returns_are_not_reported():
-    assert InvisibleRule().check("أ\\tب\\nج\\rد") == []
+    assert InvisibleRule().check("أ\tب\nج\rد") == []
 
 
 def test_input_is_not_modified():
-    text = "مرح\\u200bبا"
+    text = "مرح\u200bبا"
     before = text[:]
     InvisibleRule().check(text)
     assert text == before
