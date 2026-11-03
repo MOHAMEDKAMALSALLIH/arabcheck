@@ -1,8 +1,8 @@
-"""Detect explicitly listed invisible and control characters for human review."""
+""""Detect explicitly listed invisible and control characters for human review."""
 
 import re
 import unicodedata
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .base import BaseRule
 
@@ -30,9 +30,9 @@ class InvisibleRule(BaseRule):
 
     def check(self, text: str) -> List[Dict]:
         issues = []
-        word_spans = list(re.finditer(r"\S+", text))
+        word_spans = list(re.finditer(r"\\S+", text))
         # split("\\n") keeps line numbering explicit.
-        lines = text.split("\n")
+        lines = text.split("\\n")
         line_starts = []
         current_offset = 0
         for line in lines:
@@ -49,7 +49,10 @@ class InvisibleRule(BaseRule):
             if not is_reported:
                 continue
 
-            position = 1
+            # A 1-based word position is meaningful only when a word exists.
+            # Keep the issue, but use None rather than inventing word 1 for
+            # text that consists only of whitespace and reported characters.
+            position = None
             for word_number, span in enumerate(word_spans, start=1):
                 if span.start() <= offset < span.end():
                     position = word_number
