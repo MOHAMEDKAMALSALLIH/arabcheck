@@ -56,10 +56,15 @@ def test_multiple_invisibles_in_one_word_keep_same_word_position():
     assert [issue["location"]["word"] for issue in issues] == [2, 2]
 
 
-def test_invisible_only_text_has_token_positions():
+def test_invisible_only_text_has_no_word_position():
     issues = InvisibleRule().check("\u200b \u2060")
+    assert [issue["position"] for issue in issues] == [None, None]
+    assert [issue["location"]["word"] for issue in issues] == [None, None]
+
+
+def test_invisible_characters_inside_words_do_not_split_word_positions():
+    issues = InvisibleRule().check("أ​ب ت⁠ث")
     assert [issue["position"] for issue in issues] == [1, 2]
-    assert [issue["location"]["word"] for issue in issues] == [1, 2]
 
 
 def test_bom_at_start_has_file_bom_message():
