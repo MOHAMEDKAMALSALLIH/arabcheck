@@ -67,6 +67,23 @@ def test_invisible_characters_inside_words_do_not_split_word_positions():
     assert [issue["position"] for issue in issues] == [1, 2]
 
 
+def test_invisible_in_whitespace_between_words_has_none_position():
+    issues = InvisibleRule().check("كلمة \u200b أخرى")
+    assert len(issues) == 1
+    assert issues[0]["position"] is None
+    assert issues[0]["location"]["word"] is None
+
+
+def test_multiple_invisibles_attached_to_word_keep_word_position():
+    issues = InvisibleRule().check("\u200b\u2060كلمة")
+    assert len(issues) == 2
+    assert [issue["position"] for issue in issues] == [1, 1]
+
+    issues_trailing = InvisibleRule().check("كلمة\u200b\u2060")
+    assert len(issues_trailing) == 2
+    assert [issue["position"] for issue in issues_trailing] == [1, 1]
+
+
 def test_bom_at_start_has_file_bom_message():
     issue = InvisibleRule().check("\ufeffمرحبا")[0]
     assert issue["char"] == "U+FEFF"
