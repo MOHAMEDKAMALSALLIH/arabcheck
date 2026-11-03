@@ -1,8 +1,8 @@
-""""Detect explicitly listed invisible and control characters for human review."""
+"""Detect explicitly listed invisible and control characters for human review."""
 
 import re
 import unicodedata
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from .base import BaseRule
 
@@ -49,10 +49,10 @@ class InvisibleRule(BaseRule):
             if not is_reported:
                 continue
 
-            # A 1-based word position is meaningful only when a word exists.
-            # Keep the issue, but use None rather than inventing word 1 for
-            # text that consists only of whitespace and reported characters.
-            position = None
+            # Invisible characters are non-whitespace tokens under \\S+.
+            # This preserves the existing 1-based token-position convention,
+            # including text made up only of reported characters.
+            position = 1
             for word_number, span in enumerate(word_spans, start=1):
                 if span.start() <= offset < span.end():
                     position = word_number
