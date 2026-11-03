@@ -14,25 +14,18 @@ class InvisibleRule(BaseRule):
     description = "يرصد محارف مخفية أو تحكمية محددة لمراجعتها بشرياً."
     severity = "warning"
 
-    # Deliberately explicit: do not broaden this to every Unicode Cf character.
     REPORTED_CODEPOINTS = {
-        0x200B,  # ZERO WIDTH SPACE
-        0x2060,  # WORD JOINER
-        0x00AD,  # SOFT HYPHEN
-        0xFEFF,  # ZERO WIDTH NO-BREAK SPACE / BOM
-        *range(0x202A, 0x202F),  # Bidi embedding/override controls
-        *range(0x2066, 0x206A),  # Bidi isolate controls
-        *range(0xE0000, 0xE0080),  # Unicode tag characters
+        0x200B, 0x2060, 0x00AD, 0xFEFF,
+        *range(0x202A, 0x202F),
+        *range(0x2066, 0x206A),
+        *range(0xE0000, 0xE0080),
     }
-
-    # Cc controls are reported except ordinary text layout characters.
-    IGNORED_C0_C1 = {0x0009, 0x000A, 0x000D}  # TAB, LF, CR
+    IGNORED_C0_C1 = {0x0009, 0x000A, 0x000D}
 
     def check(self, text: str) -> List[Dict]:
         issues = []
-        word_spans = list(re.finditer(r"\\S+", text))
-        # split("\\n") keeps line numbering explicit.
-        lines = text.split("\\n")
+        word_spans = list(re.finditer(r"\S+", text))
+        lines = text.split("\n")
         line_starts = []
         current_offset = 0
         for line in lines:
@@ -42,16 +35,14 @@ class InvisibleRule(BaseRule):
         for offset, char in enumerate(text):
             codepoint = ord(char)
             category = unicodedata.category(char)
-            is_reported = (
+            if not (
                 codepoint in self.REPORTED_CODEPOINTS
                 or (category == "Cc" and codepoint not in self.IGNORED_C0_C1)
-            )
-            if not is_reported:
+            ):
                 continue
 
-            # Invisible characters are non-whitespace tokens under \\S+.
-            # This preserves the existing 1-based token-position convention,
-            # including text made up only of reported characters.
+            # Every reported character is non-whitespace, so it belongs to a
+            # token matched by \S+, even when the token contains no letters.
             position = 1
             for word_number, span in enumerate(word_spans, start=1):
                 if span.start() <= offset < span.end():
