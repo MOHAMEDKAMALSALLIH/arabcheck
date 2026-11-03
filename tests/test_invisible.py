@@ -74,9 +74,9 @@ def test_invisible_in_whitespace_between_words_has_none_position():
     assert issues[0]["location"]["word"] is None
 
 
-@pytest.mark.parametrize("separator", ["\\u000b", "\\u000c", "\\u0085"])
+@pytest.mark.parametrize("separator", ["\u000b", "\u000c", "\u0085"])
 def test_reportable_whitespace_controls_preserve_word_boundaries(separator):
-    text = "كلمة1" + separator + "كلمة2\\u200b"
+    text = "كلمة1" + separator + "كلمة2\u200b"
     issues = InvisibleRule().check(text)
 
     assert [issue["char"] for issue in issues] == [
