@@ -74,6 +74,21 @@ def test_invisible_in_whitespace_between_words_has_none_position():
     assert issues[0]["location"]["word"] is None
 
 
+@pytest.mark.parametrize("separator", ["\\u000b", "\\u000c", "\\u0085"])
+def test_reportable_whitespace_controls_preserve_word_boundaries(separator):
+    text = "كلمة1" + separator + "كلمة2\\u200b"
+    issues = InvisibleRule().check(text)
+
+    assert [issue["char"] for issue in issues] == [
+        "U+{:04X}".format(ord(separator)),
+        "U+200B",
+    ]
+    assert issues[0]["position"] is None
+    assert issues[0]["location"]["word"] is None
+    assert issues[1]["position"] == 2
+    assert issues[1]["location"]["word"] == 2
+
+
 def test_multiple_invisibles_attached_to_word_keep_word_position():
     issues = InvisibleRule().check("\u200b\u2060كلمة")
     assert len(issues) == 2
