@@ -94,22 +94,66 @@ To select one rule:
 
 ```bash
 arabcheck scan "الإستخدام" --rules hamzat_qat
-arabcheck scan "النص" --rules invisible
 ```
 
-The `hamzat_qat` rule flags defined suspicious forms as warnings for human review. A warning is not a confirmed correction.
+To test `invisible`, the input must contain an invisible character. This Bash example inserts U+200B ZERO WIDTH SPACE:
 
-The `invisible` rule reports selected invisible and control characters, including examples such as U+200B ZERO WIDTH SPACE and U+FEFF BOM. It does not modify or remove them. A reported issue causes the scanner to return exit code `1`.
+```bash
+# Bash
+arabcheck scan $'نص\u200bمخفي' --rules invisible
+```
+
+The `hamzat_qat` rule flags a defined set of suspicious forms as warnings for human review. A warning is not a confirmed correction; for example, the rule suggests a spelling for `الإستخدام`.
+
+The `invisible` rule reports selected invisible and control characters, including U+200B ZERO WIDTH SPACE and U+FEFF BOM. It does not modify or remove them. A reported issue causes the scanner to return exit code `1`.
+
+A UTF-8 file saved with a BOM begins with U+FEFF. The `invisible` rule reports that leading BOM, and `arabcheck scan --file file.txt` returns exit code `1` when it is the only reported issue.
 
 ### 4. JSON output
+
+Run:
 
 ```bash
 arabcheck scan "الإستخدام" --rules hamzat_qat --json
 ```
 
-JSON output includes the original input, detected issues, and metadata such as selected rules and package version. Issue fields depend on the rule; the invisible-character rule includes character and location details.
+The JSON document contains `input`, `issues`, and `meta`. The following is a compact illustration of the issue structure; exact values and messages come from the selected rule:
 
-### 5. Read from a file or stdin
+```json
+{
+  "input": "الإستخدام",
+  "issues": [
+    {
+      "rule": "hamzat_qat",
+      "type": "hamzat_qat",
+      "severity": "warning",
+      "word": "الإستخدام",
+      "intended": "الاستخدام",
+      "position": 1,
+      "location": {"word": 1},
+      "message": "..."
+    }
+  ],
+  "meta": {
+    "rules": ["hamzat_qat"],
+    "version": "0.2.0"
+  }
+}
+```
+
+For `invisible`, each issue also includes the character code, Unicode name, and location details (`word`, `line`, `column`, and `offset`). The `position` and `location.word` values can be `null` when the character is not associated with a word.
+
+### 5. Legacy audit and the scanner
+
+The original `--audit` option remains available on the main command:
+
+```bash
+arabcheck "الإستخدام" --audit
+```
+
+It calls the legacy `ArabCheck.audit()` behavior. The newer `arabcheck scan` command uses the modular `Scanner` and registered rules (`hamzat_qat` and `invisible` by default). These are separate interfaces; use `scan` when you want to select modular rules with `--rules`.
+
+### 6. Read from a file or stdin
 
 ```bash
 arabcheck --file dataset.txt --clean
@@ -166,6 +210,8 @@ arabcheck scan [-h] [-f FILE] [--rules RULES] [-j] [-q] [text]
 
 ## Use as a Python library
 
+Use the legacy `ArabCheck` helpers for cleaning, normalization, and the legacy audit:
+
 ```python
 from arabcheck import ArabCheck
 
@@ -182,12 +228,32 @@ for issue in issues:
     print(issue["message"])
 ```
 
+Use the modular scanner through its module. The current constructor accepts rule objects (not rule-name strings):
+
+```python
+from arabcheck.scanner import Scanner
+from arabcheck.rules.hamza import HamzatQatRule
+from arabcheck.rules.invisible import InvisibleRule
+
+scanner = Scanner(rules=[HamzatQatRule(), InvisibleRule()])
+issues = scanner.scan("نص للإستخدام")
+for issue in issues:
+    print(issue["rule"], issue["message"])
+```
+
 ## Examples
 
 Working scripts are available in [`examples/`](examples/):
 
 - [`clean_dataset.py`](examples/clean_dataset.py) — clean an Arabic text dataset.
 - [`preprocess_for_ai.py`](examples/preprocess_for_ai.py) — prepare text for AI workflows.
+
+Run them from the repository root:
+
+```bash
+python examples/clean_dataset.py
+python examples/preprocess_for_ai.py
+```
 
 ## Testing
 
