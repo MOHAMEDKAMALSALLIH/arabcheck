@@ -26,10 +26,6 @@ The rule scope remains:
 
 Current implementation includes the `invisible` rule and the conservative `hamzat_qat` rule. The hamza rule reports suspicious forms for human review; its linguistic coverage and precision still require evaluation. The remaining rule categories are planned.
 
-Additional planned audits remain in scope:
-- Taa marbuta.
-- Tanween.
-
 **Important principle:** Rules must flag suspicious cases for human review. They must not present uncertain cases as confirmed errors or silently alter source text.
 
 ### Phase 4 — Unified Scan CLI (Partially Implemented)
@@ -62,19 +58,22 @@ The command, rule selection, text/file/stdin handling, JSON output, and exit-cod
 - Updating `README.md`, `README.ar.md`, and `CHANGELOG.md` when features, behavior, tests, or releases warrant it.
 
 ## Other Planned Items
-- Publish and maintain releases on PyPI.
-- Continue extended audit rules (taa marbuta and tanween) as part of the broader quality-rule scope.
+- Extended audit rules: taa marbuta and tanween.
+- PyPI publication is complete for versions 0.1.0 and 0.1.1; maintaining and publishing future releases remains ongoing work.
 
 ## Parallel Tracks
 
 ### Hardening and Reliability
-Regression coverage, edge cases, output compatibility, performance checks, and supported-Python-version verification.
+Regression coverage, edge cases, output compatibility, and supported-Python-version verification.
 
 ### Post-v1.0 Backlog
-Potential future enhancements such as Arabic-number auditing and PII auditing. These do not replace or reduce the original seven phases.
+- Performance optimization and benchmarking.
+- Potential future enhancements such as Arabic-number auditing and PII auditing.
 
-### Business and Investment Strategy
-A parallel track covering customer validation, revenue models, grants and sponsorships, incubators, partnerships, and possible startup, investment, or acquisition paths as the project matures. This track does not change the technical roadmap.
+These items do not replace or reduce the original seven phases.
+
+### Adoption and Validation
+Measure real-world usefulness before any commercial planning: an evaluation corpus with precision/recall, runs on real datasets, and user feedback. Funding or commercial options stay out of scope until there is evidence of demand.
 
 ## Status Policy
 - Phase 1 is recorded as completed.
