@@ -82,7 +82,7 @@ arabcheck "أحمد إبراهيم آمن" --normalize
 
 **تنبيه:** توحيد الحروف قد يفقد معلومات لغوية؛ استخدمه فقط عندما يكون هذا الفقد مناسباً لغرض البحث أو الفهرسة أو تجهيز البيانات.
 
-### 3. فحص النص
+### 3. تشغيل محرك الفحص
 
 عند عدم تمرير `--rules`، يشغّل الأمر `arabcheck scan` القاعدتين المسجلتين افتراضياً: `hamzat_qat` و`invisible`.
 
@@ -90,33 +90,77 @@ arabcheck "أحمد إبراهيم آمن" --normalize
 arabcheck scan "الإستخدام"
 ```
 
-لتحديد قاعدة واحدة:
+لتحديد قاعدة الهمزة وحدها:
 
 ```bash
 arabcheck scan "الإستخدام" --rules hamzat_qat
-arabcheck scan "النص" --rules invisible
 ```
 
-قاعدة `hamzat_qat` ترصد أنماطاً محددة يُشتبه في حاجتها إلى مراجعة إملائية، وتصدر تحذيراً لا حكماً نهائياً أو تصحيحاً مؤكداً.
+ولاختبار قاعدة `invisible`، يجب أن يحتوي النص على محرف مخفي فعلي. المثال التالي خاص بـ Bash ويُدرج محرف U+200B ZERO WIDTH SPACE:
 
-قاعدة `invisible` ترصد محارف مخفية أو تحكمية محددة، مثل U+200B ZERO WIDTH SPACE وU+FEFF BOM. لا تحذف القاعدة هذه المحارف ولا تعدّل النص. وجود نتيجة فحص يؤدي إلى رمز الخروج `1`.
+```bash
+# Bash
+arabcheck scan $'نص\u200bمخفي' --rules invisible
+```
+
+ترصد قاعدة `hamzat_qat` مجموعة محددة من الصيغ المشتبه فيها، وتصدر تحذيرات للمراجعة البشرية. التحذير ليس تصحيحاً مؤكداً؛ فمثلاً تقترح القاعدة صيغة بديلة لكلمة `الإستخدام`.
+
+أما قاعدة `invisible` فترصد محارف مخفية أو تحكمية محددة، منها U+200B ZERO WIDTH SPACE وU+FEFF BOM. لا تحذف القاعدة هذه المحارف ولا تعدّل النص. وجود نتيجة واحدة أو أكثر يجعل أمر الفحص يعيد رمز الخروج `1`.
+
+ملف UTF-8 المحفوظ مع BOM يبدأ بالمحرف U+FEFF. ترصد قاعدة `invisible` علامة BOM الموجودة في بداية الملف، ويعيد الأمر `arabcheck scan --file file.txt` رمز الخروج `1` إذا كانت هي المشكلة الوحيدة المكتشفة.
 
 ### 4. مخرجات JSON
+
+شغّل الأمر:
 
 ```bash
 arabcheck scan "الإستخدام" --rules hamzat_qat --json
 ```
 
-تتضمن مخرجات JSON النص الأصلي والمشكلات المكتشفة والبيانات الوصفية، مثل القواعد المستخدمة وإصدار الحزمة. وتختلف تفاصيل المشكلة بحسب القاعدة؛ فقاعدة المحارف المخفية تتضمن معلومات المحرف وموقعه.
+تتضمن وثيقة JSON الحقول `input` و`issues` و`meta`. المثال التالي توضيحي ومختصر لبنية نتيجة قاعدة الهمزة؛ أما القيم والرسائل الدقيقة فتنتجها القاعدة عند التشغيل:
 
-### 5. القراءة من ملف أو stdin
+```json
+{
+  "input": "الإستخدام",
+  "issues": [
+    {
+      "rule": "hamzat_qat",
+      "type": "hamzat_qat",
+      "severity": "warning",
+      "word": "الإستخدام",
+      "intended": "الاستخدام",
+      "position": 1,
+      "location": {"word": 1},
+      "message": "..."
+    }
+  ],
+  "meta": {
+    "rules": ["hamzat_qat"],
+    "version": "0.2.0"
+  }
+}
+```
+
+تتضمن نتيجة قاعدة `invisible` أيضاً رمز المحرف واسمه في Unicode وتفاصيل موقعه: `word` و`line` و`column` و`offset`. وقد تكون قيمة `position` و`location.word` هي `null` عندما لا يرتبط المحرف بكلمة.
+
+### 5. الفحص القديم ومحرك Scanner الجديد
+
+ما زال الخيار القديم `--audit` متاحاً في الأمر الرئيسي:
+
+```bash
+arabcheck "الإستخدام" --audit
+```
+
+وهو يستدعي سلوك `ArabCheck.audit()` القديم. أما الأمر الأحدث `arabcheck scan` فيستخدم محرك `Scanner` المعياري والقواعد المسجلة، وهما `hamzat_qat` و`invisible` افتراضياً. هاتان واجهتان منفصلتان؛ استخدم `scan` عندما تريد اختيار القواعد المعيارية بواسطة `--rules`.
+
+### 6. القراءة من ملف أو stdin
 
 ```bash
 arabcheck --file dataset.txt --clean
 cat article.txt | arabcheck --clean
 ```
 
-ويدعم أمر الفحص أيضاً الملف وstdin:
+ويدعم أمر الفحص أيضاً القراءة من ملف أو stdin:
 
 ```bash
 arabcheck scan --file dataset.txt
@@ -166,6 +210,8 @@ arabcheck scan [-h] [-f FILE] [--rules RULES] [-j] [-q] [text]
 
 ## الاستخدام كمكتبة Python
 
+استخدم دوال `ArabCheck` القديمة لتنظيف النص وتوحيده وإجراء الفحص القديم:
+
 ```python
 from arabcheck import ArabCheck
 
@@ -182,12 +228,32 @@ for issue in issues:
     print(issue["message"])
 ```
 
+أما محرك الفحص المعياري فيُستدعى من وحدته. وتستقبل `Scanner` حالياً كائنات قواعد، وليس أسماء القواعد كنصوص:
+
+```python
+from arabcheck.scanner import Scanner
+from arabcheck.rules.hamza import HamzatQatRule
+from arabcheck.rules.invisible import InvisibleRule
+
+scanner = Scanner(rules=[HamzatQatRule(), InvisibleRule()])
+issues = scanner.scan("نص للإستخدام")
+for issue in issues:
+    print(issue["rule"], issue["message"])
+```
+
 ## الأمثلة
 
-توجد أمثلة عملية في مجلد [`examples/`](examples/):
+توجد سكربتات عملية في مجلد [`examples/`](examples/):
 
 - [`clean_dataset.py`](examples/clean_dataset.py) — تنظيف مجموعة بيانات عربية.
 - [`preprocess_for_ai.py`](examples/preprocess_for_ai.py) — تجهيز النصوص لسير عمل الذكاء الاصطناعي.
+
+لتشغيلها من المجلد الرئيسي للمشروع:
+
+```bash
+python examples/clean_dataset.py
+python examples/preprocess_for_ai.py
+```
 
 ## الاختبارات
 
