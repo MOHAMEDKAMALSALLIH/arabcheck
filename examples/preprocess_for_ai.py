@@ -7,6 +7,8 @@ Run:
     python examples/preprocess_for_ai.py
 """
 
+from __future__ import annotations
+
 from arabcheck import ArabCheck
 
 
