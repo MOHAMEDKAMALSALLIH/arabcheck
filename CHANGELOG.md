@@ -7,15 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned
-- Visual homoglyph/confusable detection.
-- Mojibake detection.
-- Whitespace and punctuation quality rules.
-- Extended audits for taa marbuta and tanween.
-- CSV/JSONL dataset scanning, duplicate detection, and text-quality statistics.
-
-## [0.2.0] - 2026-11-04
-
 ### Added
 - Modular `BaseRule` interface and scanner engine.
 - `arabcheck scan` command with selectable rules and JSON output.
@@ -52,7 +43,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Exit codes for CI/CD (0, 1, 2).
 - Test suite and GitHub Actions CI for Python 3.8–3.12.
 
-[Unreleased]: https://github.com/MOHAMEDKAMALSALLIH/arabcheck/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/MOHAMEDKAMALSALLIH/arabcheck/releases/tag/v0.2.0
+### Planned
+- Visual homoglyph/confusable detection.
+- Mojibake detection.
+- Whitespace and punctuation quality rules.
+- Extended audits for taa marbuta and tanween.
+- CSV/JSONL dataset scanning, duplicate detection, and text-quality statistics.
+
+[Unreleased]: https://github.com/MOHAMEDKAMALSALLIH/arabcheck/compare/v0.1.1...HEAD
 [0.1.1]: https://github.com/MOHAMEDKAMALSALLIH/arabcheck/releases/tag/v0.1.1
 [0.1.0]: https://github.com/MOHAMEDKAMALSALLIH/arabcheck/releases/tag/v0.1.0
