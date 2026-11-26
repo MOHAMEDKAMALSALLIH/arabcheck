@@ -7,6 +7,8 @@ Run:
     python examples/clean_dataset.py
 """
 
+from __future__ import annotations
+
 from arabcheck import ArabCheck
 
 
@@ -16,6 +18,7 @@ SAMPLE_DATASET = [
     "مَــرحبــاً بِكُم فِي العَالَمِ العَرَبِيِّ",
     "الذَّكَاءُ الاصْطِنَاعِيُّ يُغَيِّرُ العَالَمَ",
     "النَّصُّ العَرَبِيُّ يَحتَاجُ إِلَى مُعَالَجَةٍ خَاصَّةٍ",
+    "الإستخدام الصحيح يحتاج إلى مراجعة إملائية.",
 ]
 
 

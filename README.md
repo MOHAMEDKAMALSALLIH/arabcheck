@@ -1,6 +1,6 @@
 # ArabCheck 🔍
 
-> A lightweight, open-source toolkit and CLI for cleaning, normalizing, and auditing Arabic text for AI and NLP workflows.
+> A lightweight, open-source Python toolkit and CLI for cleaning, normalizing, and auditing Arabic text for AI and NLP workflows.
 
 [العربية →](README.ar.md)
 
@@ -14,285 +14,271 @@
 
 ## Why ArabCheck?
 
-Arabic text data often contains noise that breaks NLP pipelines:
+Arabic text data can contain noise that complicates NLP workflows:
 
-- **Unicode variants** — `أ` / `إ` / `آ` / `ا` / `ٱ` all represent alif
-- **Diacritics (Tashkeel)** — fatha, damma, shadda, tanween
-- **Tatweel (Kashida)** — decorative stretching characters
-- **Quranic marks** and extra whitespace
+- Unicode variants and inconsistent character forms.
+- Diacritics (tashkeel), Quranic marks, and tatweel.
+- Invisible or control characters.
+- Extra whitespace and inconsistent formatting.
 
-ArabCheck makes cleaning and auditing this data a one-liner.
-
----
+ArabCheck provides text-cleaning and normalization utilities alongside rule-based checks. Detection rules report findings for review; they do not automatically rewrite the input.
 
 ## Features
 
-- 🕌 **Tashkeel removal** — Harakat + Quranic marks
-- 🔤 **Character normalization** — Alif, Yaa, Hamza, Taa Marbuta
-- 〰️ **Tatweel removal** — Kashida stretching
-- 🧹 **Text cleaning** — Whitespace normalization
-- 🔍 **Grammar audit** — Hamzat qat/wasl detection
-- 📂 **File + stdin support**
-- 🤖 **JSON output** for CI/CD
-- 🧩 **Extensible**
-
----
+- **Tashkeel removal** — harakat and supported Quranic marks.
+- **Tatweel removal** — decorative stretching characters.
+- **Text cleaning** — whitespace normalization.
+- **Character normalization** — configurable normalization of alif, yaa, hamza, and optionally taa marbuta.
+- **Invisible-character detection** — selected zero-width, bidirectional (Bidi), and other invisible/control characters.
+- **Rule-based scanning** — current rules include `hamzat_qat` and `invisible`.
+- **File and stdin input**.
+- **JSON output** for automation.
+- **Extensible rule interface**.
 
 ## Install
 
-**From PyPI (recommended):**
+**From PyPI:**
 
-    pip install arabcheck
+```bash
+pip install arabcheck
+```
 
 **From source:**
 
-    git clone https://github.com/MOHAMEDKAMALSALLIH/arabcheck.git
-    cd arabcheck
-    pip install -e .
+```bash
+git clone https://github.com/MOHAMEDKAMALSALLIH/arabcheck.git
+cd arabcheck
+pip install -e .
+```
 
-**Requirements**: Python 3.8+ — no external dependencies.
+Requirements: Python 3.8+; no runtime dependencies.
 
----
+**Version note:** PyPI currently provides ArabCheck 0.1.1. The `arabcheck scan` command and modular `invisible` rule described below are part of the unreleased 0.2.0 development version. To use them before a 0.2.0 package is published, install from the repository source using the instructions above.
 
 ## Quick Start
 
-    arabcheck "النَّصُّ العَرَبِيُّ لِلتَّجْرِبَة" --clean
+```bash
+arabcheck "النَّصُّ العَرَبِيُّ لِلتَّجْرِبَة" --clean
+```
 
-**Input:**
+Output:
 
-    النَّصُّ العَرَبِيُّ لِلتَّجْرِبَة
-
-**Output:**
-
-    النص العربي للتجربة
-
----
+```text
+النص العربي للتجربة
+```
 
 ## Usage Examples
 
 ### 1. Clean text
 
-    arabcheck "العَرَبِيَّةُ ـــ لُغَةٌ جَمِيلَةٌ" --clean
-    # → العربية لغة جميلة
+```bash
+arabcheck "العَرَبِيَّةُ ـــ لُغَةٌ جَمِيلَةٌ" --clean
+# العربية لغة جميلة
+```
 
 ### 2. Normalize characters
 
-    arabcheck "أحمد إبراهيم آمن" --normalize
-    # → احمد ابراهيم امن
+```bash
+arabcheck "أحمد إبراهيم آمن" --normalize
+# احمد ابراهيم امن
+```
 
-**⚠️ Warning**: Normalization loses linguistic information. Use it for search, indexing, or NLP pipelines only.
+Normalization is lossy. Use it only when that loss is appropriate for your search, indexing, or NLP workflow.
 
-### 3. Audit text (Legacy)
+### 3. Run the scanner
 
-    arabcheck "الإستخدام" --audit
-    # ⚠️  احتمال خطأ إملائي: 'الإستخدام'؛ الصيغة المقترحة للمراجعة هي 'الاستخدام'. تحذير للمراجعة البشرية، وليس تصحيحاً آلياً مؤكداً.
+When `--rules` is omitted, `arabcheck scan` runs the registered default rules: `hamzat_qat` and `invisible`.
+
+```bash
+arabcheck scan "الإستخدام"
+```
+
+To select one rule:
+
+```bash
+arabcheck scan "الإستخدام" --rules hamzat_qat
+```
+
+To test `invisible`, the input must contain an invisible character. This Bash example inserts U+200B ZERO WIDTH SPACE:
+
+```bash
+# Bash
+arabcheck scan $'نص\u200bمخفي' --rules invisible
+```
+
+The `hamzat_qat` rule flags a defined set of suspicious forms as warnings for human review. A warning is not a confirmed correction; for example, the rule suggests a spelling for `الإستخدام`.
+
+The `invisible` rule reports selected invisible and control characters, including U+200B ZERO WIDTH SPACE and U+FEFF BOM. It does not modify or remove them. A reported issue causes the scanner to return exit code `1`.
+
+A UTF-8 file saved with a BOM begins with U+FEFF. The `invisible` rule reports that leading BOM, and `arabcheck scan --file file.txt` returns exit code `1` when it is the only reported issue.
 
 ### 4. JSON output
 
-    arabcheck "النَّصُّ" --clean --json
+Run:
 
-Returns:
+```bash
+arabcheck scan "الإستخدام" --rules hamzat_qat --json
+```
 
+The JSON document contains `input`, `issues`, and `meta`. The following is a compact illustration of the issue structure; exact values and messages come from the selected rule:
+
+```json
+{
+  "input": "الإستخدام",
+  "issues": [
     {
-      "input": "النَّصُّ",
-      "result": "النص",
-      "issues": [],
-      "meta": {
-        "cleaned": true,
-        "normalized": false,
-        "audited": false,
-        "version": "0.2.0"
-      }
+      "rule": "hamzat_qat",
+      "type": "hamzat_qat",
+      "severity": "warning",
+      "word": "الإستخدام",
+      "intended": "الاستخدام",
+      "position": 1,
+      "location": {"word": 1},
+      "message": "..."
     }
+  ],
+  "meta": {
+    "rules": ["hamzat_qat"],
+    "version": "0.2.0"
+  }
+}
+```
 
-### 5. Scan text using specific rules
+For `invisible`, each issue also includes the character code, Unicode name, and location details (`word`, `line`, `column`, and `offset`). The `position` and `location.word` values can be `null` when the character is not associated with a word.
 
-    arabcheck scan "الإستخدام" --rules hamzat_qat
+### 5. Legacy audit and the scanner
 
-Returns:
+The original `--audit` option remains available on the main command:
 
-    الإستخدام
-     ⚠️  احتمال خطأ إملائي: 'الإستخدام'؛ الصيغة المقترحة للمراجعة هي 'الاستخدام'. تحذير للمراجعة البشرية، وليس تصحيحاً آلياً مؤكداً.
+```bash
+arabcheck "الإستخدام" --audit
+```
 
-### 6. Scan text with JSON output
+It calls the legacy `ArabCheck.audit()` interface, which uses the `hamzat_qat` rule. The newer `arabcheck scan` command uses the modular `Scanner` interface and runs the registered rules (`hamzat_qat` and `invisible` by default). Use `scan` when you want to select modular rules with `--rules`; unlike the legacy audit, it can also report invisible characters.
 
-    arabcheck scan "الإستخدام" --rules hamzat_qat --json
+### 6. Read from a file or stdin
 
-Returns:
+```bash
+arabcheck --file dataset.txt --clean
+cat article.txt | arabcheck --clean
+```
 
-    {
-      "input": "الإستخدام",
-      "issues": [
-        {
+The scanner also accepts file and stdin input:
 
-          "rule": "hamzat_qat",
-
-          "type": "hamzat_qat",
-
-          "severity": "warning",
-
-          "word": "الإستخدام",
-
-          "intended": "الاستخدام",
-
-          "position": 1,
-
-          "location": {
-
-            "word": 1
-
-          },
-
-          "message": "احتمال خطأ إملائي: 'الإستخدام'؛ الصيغة المقترحة للمراجعة هي 'الاستخدام'. تحذير للمراجعة البشرية، وليس تصحيحاً آلياً مؤكداً."
-
-        }
-      ],
-      "meta": {
-        "rules": [
-          "hamzat_qat"
-        ],
-        "version": "0.2.0"
-      }
-    }
-
-
-### Default scan rules
-
-When `--rules` is omitted, `arabcheck scan` runs both `hamzat_qat` and `invisible`. The invisible rule reports selected invisible and control characters for human review; it never changes the input. Therefore, text containing a reported character (for example, U+200B ZERO WIDTH SPACE or a BOM) produces an issue and exit code `1`, even when its spelling is otherwise correct.
-
-To run only the legacy hamza rule:
-
-    arabcheck scan "النص" --rules hamzat_qat
-
-To run only the invisible-character rule:
-
-    arabcheck scan "النص" --rules invisible
-
-### 7. Read from file
-
-    arabcheck --file dataset.txt --clean
-
-### 8. From stdin
-
-    cat article.txt | arabcheck --clean
-
----
+```bash
+arabcheck scan --file dataset.txt
+cat article.txt | arabcheck scan
+```
 
 ## CLI Reference
 
-### Main Command
+### Main command
 
-    usage: arabcheck [-h] [-f FILE] [-c] [-n] [-a] [-j] [-q] [-V] [text]
-
-| Option | Description |
-|--------|-------------|
-| `-h, --help` | Show help |
-| `-f, --file FILE` | Read from file |
-| `-c, --clean` | Remove tashkeel, tatweel, extra spaces |
-| `-n, --normalize` | Normalize letters |
-| `-a, --audit` | Audit spelling issues (Legacy) |
-| `-j, --json` | JSON output |
-| `-q, --quiet` | Suppress output |
-| `-V, --version` | Show version |
-
-### Scan Command
-
-    usage: arabcheck scan [-h] [-f FILE] [--rules RULES] [-j] [-q] [text]
+```text
+arabcheck [-h] [-f FILE] [-c] [-n] [-a] [-j] [-q] [-V] [text]
+```
 
 | Option | Description |
-|--------|-------------|
+|---|---|
 | `-h, --help` | Show help |
-| `-f, --file FILE` | Read from file |
-| `--rules RULES` | Comma-separated list of rules to run (e.g. `hamzat_qat`) |
+| `-f, --file FILE` | Read from a UTF-8 file |
+| `-c, --clean` | Remove tashkeel, tatweel, and extra whitespace |
+| `-n, --normalize` | Normalize supported character variants |
+| `-a, --audit` | Run the legacy spelling audit |
 | `-j, --json` | JSON output |
-| `-q, --quiet` | Suppress output |
+| `-q, --quiet` | Suppress the processed text |
+| `-V, --version` | Show package version |
 
-### Exit Codes
+### Scan command
+
+```text
+arabcheck scan [-h] [-f FILE] [--rules RULES] [-j] [-q] [text]
+```
+
+| Option | Description |
+|---|---|
+| `-h, --help` | Show help |
+| `-f, --file FILE` | Read from a UTF-8 file |
+| `--rules RULES` | Comma-separated rule names |
+| `-j, --json` | JSON output |
+| `-q, --quiet` | Suppress the input text |
+
+### Exit codes
 
 | Code | Meaning |
-|:----:|:--------|
-| `0` | Success, no issues |
-| `1` | Issues found (with `--audit` or `scan`) |
-| `2` | Input error or invalid arguments |
+|:---:|---|
+| `0` | No issues were reported |
+| `1` | One or more issues were reported |
+| `2` | Invalid arguments or input error |
 
----
+## Use as a Python library
 
-## Use as a Library
+Use the legacy `ArabCheck` helpers for cleaning, normalization, and the legacy audit:
 
-    from arabcheck import ArabCheck
+```python
+from arabcheck import ArabCheck
 
-    checker = ArabCheck()
+checker = ArabCheck()
 
-    # Clean
-    text = checker.clean_text("النَّصُّ العَرَبِيُّ ـــ")
-    print(text)  # → النص العربي
+cleaned = checker.clean_text("النَّصُّ العَرَبِيُّ ـــ")
+print(cleaned)  # النص العربي
 
-    # Normalize
-    print(checker.normalize("أحمد إبراهيم"))
+normalized = checker.normalize("أحمد إبراهيم")
+print(normalized)  # احمد ابراهيم
 
-    # Audit
-    issues = checker.audit("الأمر بالأمر")
-    for issue in issues:
-        print(issue["message"])
+issues = checker.audit("الإستخدام")
+for issue in issues:
+    print(issue["message"])
+```
 
----
+Use the modular scanner through its module. The current constructor accepts rule objects (not rule-name strings):
+
+```python
+from arabcheck.scanner import Scanner
+from arabcheck.rules.hamza import HamzatQatRule
+from arabcheck.rules.invisible import InvisibleRule
+
+scanner = Scanner(rules=[HamzatQatRule(), InvisibleRule()])
+issues = scanner.scan("نص للإستخدام")
+for issue in issues:
+    print(issue["rule"], issue["message"])
+```
 
 ## Examples
 
-Full working examples are in the [`examples/`](examples/) folder:
+Working scripts are available in [`examples/`](examples/):
 
-- **[`clean_dataset.py`](examples/clean_dataset.py)** — Clean an entire Arabic text dataset
-- **[`preprocess_for_ai.py`](examples/preprocess_for_ai.py)** — Preprocessing pipeline for AI models
+- [`clean_dataset.py`](examples/clean_dataset.py) — clean an Arabic text dataset.
+- [`preprocess_for_ai.py`](examples/preprocess_for_ai.py) — prepare text for AI workflows.
 
-Run them:
+Run them from the repository root:
 
-    python examples/clean_dataset.py
-    python examples/preprocess_for_ai.py
-
----
+```bash
+python examples/clean_dataset.py
+python examples/preprocess_for_ai.py
+```
 
 ## Testing
 
-    pip install -e ".[dev]"
-    pytest
+Install development dependencies and run the test suite:
 
-Tests covering core and CLI — all passing ✅
-
----
+```bash
+pip install -e ".[dev]"
+pytest
+```
 
 ## Roadmap
 
-- [x] Tashkeel & Tatweel removal
-- [x] Character normalization
-- [x] File + stdin support
-- [x] JSON output
-- [x] Exit codes for CI/CD
-- [x] Grammar audit
-- [ ] Extended audit rules
-- [ ] Dataset loading (CSV, JSONL)
-- [ ] Duplicate detection
-- [ ] Text quality statistics
-
----
+ArabCheck is under active development. The original seven-phase scope includes additional Arabic text-quality rules, safe optional fixes, dataset scanning, duplicate detection, and text-quality statistics. See [`ROADMAP.md`](ROADMAP.md) for implementation status and the full plan.
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
-
----
+Contributions, issues, and feature requests are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Releases
 
-See [Releases](https://github.com/MOHAMEDKAMALSALLIH/arabcheck/releases) for version history.
-
----
+See [GitHub Releases](https://github.com/MOHAMEDKAMALSALLIH/arabcheck/releases) and [PyPI](https://pypi.org/project/arabcheck/) for published versions.
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
-
----
-
-<p align="center">
-  Made with ❤️ for the Arabic NLP community
-</p>
+MIT — see [`LICENSE`](LICENSE).

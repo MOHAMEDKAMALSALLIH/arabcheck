@@ -7,6 +7,8 @@ Run:
     python examples/preprocess_for_ai.py
 """
 
+from __future__ import annotations
+
 from arabcheck import ArabCheck
 
 
@@ -19,14 +21,16 @@ RAW_SAMPLES = [
 ]
 
 
-def preprocess_for_ai(text: str, checker: ArabCheck) -> str:
+def preprocess_for_ai(
+    text: str, checker: ArabCheck, *, normalize: bool = False
+) -> str:
     """Full preprocessing pipeline for AI/NLP input.
 
     Pipeline:
         1. Remove diacritics (tashkeel)
         2. Remove tatweel (kashida)
         3. Normalize whitespace
-        4. Normalize character variants (for model consistency)
+        4. Optionally normalize character variants (for model consistency)
 
     Args:
         text: Raw Arabic text.
@@ -38,18 +42,19 @@ def preprocess_for_ai(text: str, checker: ArabCheck) -> str:
     # Step 1-3: clean
     text = checker.clean_text(text)
 
-    # Step 4: normalize for consistency
-    text = checker.normalize(text)
+    # Normalization is lossy, so it is opt-in rather than applied by default.
+    if normalize:
+        text = checker.normalize(text)
 
     return text
 
 
-def show_pipeline(texts: list[str]) -> None:
+def show_pipeline(texts: list[str], *, normalize: bool = False) -> None:
     """Print the pipeline transformation for each text."""
     checker = ArabCheck()
 
     for i, raw in enumerate(texts, start=1):
-        cleaned = preprocess_for_ai(raw, checker)
+        cleaned = preprocess_for_ai(raw, checker, normalize=normalize)
 
         print(f"\n─── Sample {i} " + "─" * 40)
         print(f"  📥 Raw      : {raw}")
@@ -57,7 +62,9 @@ def show_pipeline(texts: list[str]) -> None:
         print(f"  📊 Length   : {len(raw)} → {len(cleaned)} chars")
 
 
-def make_training_pairs(texts: list[str]) -> list[dict]:
+def make_training_pairs(
+    texts: list[str], *, normalize: bool = False
+) -> list[dict]:
     """Convert raw texts into records ready for model training.
 
     Returns:
@@ -69,7 +76,7 @@ def make_training_pairs(texts: list[str]) -> list[dict]:
     for raw in texts:
         pairs.append({
             "input": raw,
-            "target": preprocess_for_ai(raw, checker),
+            "target": preprocess_for_ai(raw, checker, normalize=normalize),
         })
 
     return pairs
@@ -80,9 +87,11 @@ if __name__ == "__main__":
     print("🤖 ArabCheck — AI Preprocessing Example")
     print("=" * 60)
 
-    # Show pipeline steps
-    print("\n🔬 Preprocessing pipeline:")
+    # Show pipeline steps. Lossy character normalization is disabled by default.
+    print("\n🔬 Preprocessing pipeline (cleaning only):")
     show_pipeline(RAW_SAMPLES)
+
+    # Pass normalize=True to opt in when lossy character folding is appropriate.
 
     # Prepare training data
     print("\n" + "=" * 60)
