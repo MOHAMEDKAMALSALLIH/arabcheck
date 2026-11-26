@@ -29,6 +29,7 @@ ArabCheck provides text-cleaning and normalization utilities alongside rule-base
 - **Tatweel removal** — decorative stretching characters.
 - **Text cleaning** — whitespace normalization.
 - **Character normalization** — configurable normalization of alif, yaa, hamza, and optionally taa marbuta.
+- **Invisible-character detection** — selected zero-width, bidirectional (Bidi), and other invisible/control characters.
 - **Rule-based scanning** — current rules include `hamzat_qat` and `invisible`.
 - **File and stdin input**.
 - **JSON output** for automation.
@@ -51,6 +52,8 @@ pip install -e .
 ```
 
 Requirements: Python 3.8+; no runtime dependencies.
+
+**Version note:** PyPI currently provides ArabCheck 0.1.1. The `arabcheck scan` command and modular `invisible` rule described below are part of the unreleased 0.2.0 development version. To use them before a 0.2.0 package is published, install from the repository source using the instructions above.
 
 ## Quick Start
 
@@ -151,7 +154,7 @@ The original `--audit` option remains available on the main command:
 arabcheck "الإستخدام" --audit
 ```
 
-It calls the legacy `ArabCheck.audit()` behavior. The newer `arabcheck scan` command uses the modular `Scanner` and registered rules (`hamzat_qat` and `invisible` by default). These are separate interfaces; use `scan` when you want to select modular rules with `--rules`.
+It calls the legacy `ArabCheck.audit()` interface, which uses the `hamzat_qat` rule. The newer `arabcheck scan` command uses the modular `Scanner` interface and runs the registered rules (`hamzat_qat` and `invisible` by default). Use `scan` when you want to select modular rules with `--rules`; unlike the legacy audit, it can also report invisible characters.
 
 ### 6. Read from a file or stdin
 
